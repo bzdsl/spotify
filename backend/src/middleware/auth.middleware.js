@@ -18,7 +18,7 @@ export const requireAdmin = async (req, res, next) => {
     }
   } catch (error) {
     console.log("Failed to get user", error);
-    res.status(500).json({ message: "Failed to get user" });
+    next(error);
   }
 
   next();
