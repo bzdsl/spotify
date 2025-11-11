@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { clerkMiddleware } from "@clerk/express";
 import fileUpload from "express-fileupload";
 import path from "path";
+import cors from "cors";
 
 import userRoutes from "./routes/users.route.js";
 import authRoutes from "./routes/auth.route.js";
@@ -15,8 +16,15 @@ import { connectDB } from "./lib/db.js";
 
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 const __dirname = path.resolve();
+
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 
 app.use(express.json()); //parse req.body
 app.use(clerkMiddleware()); //add auth to req obj => req.auth
@@ -32,8 +40,8 @@ app.use(
 );
 
 app.use("/api/users", userRoutes);
-app.use("api/auth", authRoutes);
-app.use("api/admin", adminRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/songs", songRoutes);
 app.use("/api/albums", albumsRoutes);
 app.use("/api/stats", statsRoutes);
