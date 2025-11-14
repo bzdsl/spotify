@@ -2,7 +2,9 @@ import { clerkClient } from "@clerk/express";
 
 export const protectRoute = async (req, res, next) => {
   if (!req.auth.userId) {
-    res.status(401).json({ message: "Unauthorized - User not logged in" });
+    return res
+      .status(401)
+      .json({ message: "Unauthorized - User not logged in" });
   }
   next();
 };
@@ -14,7 +16,9 @@ export const requireAdmin = async (req, res, next) => {
       process.env.ADMIN_EMAIL === currentUser.primaryEmailAddress?.emailAddress;
 
     if (!isAdmin) {
-      res.status(403).json({ message: "Forbidden - User is not an admin" });
+      return res
+        .status(403)
+        .json({ message: "Forbidden - User is not an admin" });
     }
   } catch (error) {
     console.log("Failed to get user", error);
