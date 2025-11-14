@@ -28,7 +28,6 @@ const AuthCallbackPage = () => {
         navigate("/");
       }
     };
-    console.log("it's good to go here");
     syncUser();
   }, [isLoaded, user, navigate]);
   return (

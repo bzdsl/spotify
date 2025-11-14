@@ -25,7 +25,7 @@ const AlbumPage = () => {
     <div className="h-full">
       <ScrollArea className="h-full rounded-md">
         {/* Main Content */}
-        <div className="relative min-h-full">
+        <div className="relative min-h-screen">
           {/* bg gradient */}
           <div
             className="absolute inset-0 bg-linear-to-b from-[#5038a0]/80 via-zinc-900/80
