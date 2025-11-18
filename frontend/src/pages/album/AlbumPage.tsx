@@ -4,17 +4,45 @@ import { useParams } from "react-router-dom";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Play, Clock } from "lucide-react";
+import { Play, Clock, Pause } from "lucide-react";
+import { usePlayerStore } from "@/store/usePlayerStore";
 
 const AlbumPage = () => {
   const { albumId } = useParams();
   const { fetchAlbumsById, currentAlbum, isLoading } = useMusicStore();
+  const { currentSong, isPlaying, playAlbum, togglePlay } = usePlayerStore();
 
   useEffect(() => {
     if (albumId) fetchAlbumsById(albumId);
   }, [fetchAlbumsById, albumId]);
 
   if (isLoading) return null;
+
+  const handlePlayAlbum = () => {
+    if (!currentAlbum) return;
+    const isCUrrentAlbumPlaying = currentAlbum?.songs.some(
+      (song) => song._id === currentSong?._id
+    );
+    if (isCUrrentAlbumPlaying) togglePlay();
+    else {
+      //start playing the album from the beginning
+      playAlbum(currentAlbum?.songs, 0);
+    }
+  };
+
+  const handlePlaySong = (index: number) => {
+    if (!currentAlbum) return;
+
+    const isCurrentSong = currentAlbum.songs[index]._id === currentSong?._id;
+
+    // If clicking on the currently playing song, toggle play/pause
+    if (isCurrentSong && isPlaying) {
+      togglePlay();
+    } else {
+      // Otherwise, play the selected song
+      playAlbum(currentAlbum?.songs, index);
+    }
+  };
 
   const formatDuration = (duration: number) => {
     const minutes = Math.floor(duration / 60);
@@ -58,11 +86,19 @@ const AlbumPage = () => {
             {/* play button */}
             <div className="px-6 pb-4 flex items-center gap-6">
               <Button
+                onClick={handlePlayAlbum}
                 size="icon"
                 className="w-14 h-14 rounded-full bg-green-500 hover:bg-green-400 
                 hover:scale-105 transition-all"
               >
-                <Play className="h-7 w-7 text-black" />
+                {isPlaying &&
+                currentAlbum?.songs.some(
+                  (song) => song._id === currentSong?._id
+                ) ? (
+                  <Pause className="h-7 w-7 text-black" />
+                ) : (
+                  <Play className="h-7 w-7 text-black" />
+                )}
               </Button>
             </div>
 
@@ -84,45 +120,57 @@ const AlbumPage = () => {
               {/* table song lists */}
               <div className="px-6">
                 <div className="space-y-2 py-4">
-                  {currentAlbum?.songs.map((song, index) => (
-                    <div
-                      key={song._id}
-                      className="grid grid-cols-[16px_4fr_2fr_1fr] gap-4 px-4 py-2 text-sm 
+                  {currentAlbum?.songs.map((song, index) => {
+                    const isCurrentSong = currentSong?._id === song._id;
+                    return (
+                      <div
+                        key={song._id}
+                        onClick={() => handlePlaySong(index)}
+                        className="grid grid-cols-[16px_4fr_2fr_1fr] gap-4 px-4 py-2 text-sm 
   text-zinc-400 hover:bg-white/5 rounded-md group cursor-pointer"
-                    >
-                      {/* index / play icon */}
-                      <div className="flex items-center justify-center">
-                        <span className="group-hover:hidden">{index + 1}</span>
-                        <Play className="h-4 w-4 hidden group-hover:block" />
-                      </div>
+                      >
+                        {/* index / play icon */}
+                        <div className="flex items-center justify-center">
+                          {isCurrentSong && isPlaying ? (
+                            <div className="size-4 text-green-500">♫</div>
+                          ) : (
+                            <span className="group-hover:hidden">
+                              {index + 1}
+                            </span>
+                          )}
+                          {!isCurrentSong && (
+                            <Play className="h-4 w-4 hidden group-hover:block" />
+                          )}
+                        </div>
 
-                      {/* TITLE + ARTIST */}
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={song.imageUrl}
-                          alt={song.title}
-                          className="w-12 h-12 rounded object-cover"
-                        />
+                        {/* TITLE + ARTIST */}
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={song.imageUrl}
+                            alt={song.title}
+                            className="w-12 h-12 rounded object-cover"
+                          />
 
-                        <div>
-                          <div className="font-medium text-white">
-                            {song.title}
+                          <div>
+                            <div className="font-medium text-white">
+                              {song.title}
+                            </div>
+                            <div>{song.artist}</div>
                           </div>
-                          <div>{song.artist}</div>
+                        </div>
+
+                        {/* RELEASED DATE */}
+                        <div className="flex items-center">
+                          {song.createdAt.split("T")[0]}
+                        </div>
+
+                        {/* DURATION (placeholder) */}
+                        <div className="flex items-center">
+                          {formatDuration(song.duration)}
                         </div>
                       </div>
-
-                      {/* RELEASED DATE */}
-                      <div className="flex items-center">
-                        {song.createdAt.split("T")[0]}
-                      </div>
-
-                      {/* DURATION (placeholder) */}
-                      <div className="flex items-center">
-                        {formatDuration(song.duration)}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
