@@ -38,7 +38,7 @@ const SectionGrid = ({ title, songs, isLoading }: SectionGridProps) => {
 									group-hover:scale-105"
                 />
               </div>
-              {/* TODO: Add play button */}
+              {/*  play button */}
               <PlayButton song={song} />
             </div>
             <h3 className="font-medium mb-2 truncate">{song.title}</h3>
