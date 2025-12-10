@@ -19,12 +19,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import toast from "react-hot-toast";
+import { axiosInstance } from "@/lib/axios";
 
 interface NewSong {
   title: string;
   artist: string;
   album: string;
-  duration: number;
+  duration: string;
 }
 export const AddSongDialog = () => {
   const { albums } = useMusicStore();
@@ -35,7 +37,7 @@ export const AddSongDialog = () => {
     title: "",
     artist: "",
     album: "",
-    duration: 0,
+    duration: "0",
   });
 
   const [files, setFiles] = useState<{
@@ -49,7 +51,47 @@ export const AddSongDialog = () => {
   const audioInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = async () => {};
+  const handleSubmit = async () => {
+    setIsLoading(true);
+
+    try {
+      if (!files.audio || !files.image) {
+        return toast.error("Please select both audio and image files");
+      }
+
+      const formData = new FormData();
+      formData.append("title", newSong.title);
+      formData.append("artist", newSong.artist);
+      formData.append("duration", newSong.duration);
+      if (newSong.album && newSong.album !== "none") {
+        formData.append("albumId", newSong.album);
+      }
+
+      formData.append("audioFile", files.audio);
+      formData.append("imageFile", files.image);
+
+      console.log("Sending request..."); // Debug log
+      const response = await axiosInstance.post("/admin/songs", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log("Response:", response); // Debug log
+      setNewSong({
+        title: "",
+        artist: "",
+        album: "",
+        duration: "0",
+      });
+      setFiles({ audio: null, image: null });
+      toast.success("Song added successfully");
+      setSongDialogOpen(false);
+    } catch (error) {
+      toast.error("Failed to add song. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <Dialog open={songDialogOpen} onOpenChange={setSongDialogOpen}>
       <DialogTrigger asChild>
@@ -161,7 +203,7 @@ export const AddSongDialog = () => {
               onChange={(e) =>
                 setNewSong({
                   ...newSong,
-                  duration: parseInt(e.target.value) || 0,
+                  duration: e.target.value || "0",
                 })
               }
               className="bg-zinc-800 border-zinc-700"
