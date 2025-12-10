@@ -29,7 +29,7 @@ interface NewSong {
   duration: string;
 }
 export const AddSongDialog = () => {
-  const { albums } = useMusicStore();
+  const { albums, fetchSongs } = useMusicStore();
   const [songDialogOpen, setSongDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -70,13 +70,14 @@ export const AddSongDialog = () => {
       formData.append("audioFile", files.audio);
       formData.append("imageFile", files.image);
 
-      console.log("Sending request..."); // Debug log
       const response = await axiosInstance.post("/admin/songs", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-      console.log("Response:", response); // Debug log
+
+      await fetchSongs();
+
       setNewSong({
         title: "",
         artist: "",
