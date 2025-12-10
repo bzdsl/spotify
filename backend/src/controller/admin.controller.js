@@ -18,7 +18,7 @@ const uploadToCloudinary = async (file) => {
 export const createSong = async (req, res, next) => {
   try {
     if (!req.files || !req.files.audioFile || !req.files.imageFile) {
-      res.status(400).json({ message: "Missing audio or image file" });
+      return res.status(400).json({ message: "Missing audio or image file" });
     }
     const { title, artist, albumId, duration } = req.body;
     const audioFile = req.files.audioFile;
@@ -30,8 +30,8 @@ export const createSong = async (req, res, next) => {
     const song = new Song({
       title,
       artist,
-      audioUrl: audioFile.path,
-      imageUrl: imageFile.path,
+      audioUrl: audioUrl,
+      imageUrl: imageUrl,
       duration,
       albumId: albumId || null,
     });
@@ -39,7 +39,7 @@ export const createSong = async (req, res, next) => {
 
     //if song belongs to an existed album, update
     if (albumId) {
-      const album = await Album.findByIdAndUpdate(albumId, {
+      await Album.findByIdAndUpdate(albumId, {
         $push: { songs: song._id },
       });
     }
@@ -52,7 +52,6 @@ export const createSong = async (req, res, next) => {
     next(error);
   }
 };
-
 export const deleteSong = async (req, res, next) => {
   try {
     const { id } = req.params;
